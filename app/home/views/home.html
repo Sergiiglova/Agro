@@ -1,8 +1,16 @@
 <div layout="row">
-    <md-content layout="column" flex="10"></md-content>
-    <md-input-container>
-        <label> Урожай 1  </label>
-        <input ng-model="data.plantCrop">
-    </md-input-container>
+    <md-content layout="column" flex="10">
+        <md-input-container>
+            <label> Урожай 1 в г. </label>
+            <input ng-model="data.plantCrop" type="number" min="0" max="1000">
+        </md-input-container>
+        <md-input-container>
+            <label> Радиус взаимодействия в см.</label>
+            <input ng-model="data.plantRadius" type="number" min="0" max="100">
+        </md-input-container>
+
+
+    </md-content>
+
     <md-content layout="column" flex="10"></md-content>
 </div>
