@@ -1,6 +1,6 @@
 angular.module('wise.home', []);
 
-var app = angular.module('wise', ['wise.home','angular-carousel', 'ngMaterial', 'ngRoute', 'ngDialog'])
+var app = angular.module('wise', ['ngMaterial', 'wise.home','angular-carousel','ngRoute', 'ngDialog'])
     .config(['$locationProvider', '$routeProvider','$mdThemingProvider', function ($locationProvider, $routeProvider, $mdThemingProvider) {
         $routeProvider
             // .when('/login', {
