@@ -14,29 +14,31 @@
         </md-input-container>
         <md-input-container>
             <label> г на прямой</label>
-            <input readonly ="true" ng-model="data.quarterPlantCrop" type="number" min="0" max="100">
+            <input readonly="true" ng-model="data.quarterPlantCrop" type="number" min="0" max="100">
         </md-input-container>
 
         <md-input-container>
-            <label> распределено</label>
-            <input readonly ="true" ng-model="getDividingSum()" type="number" min="0" max="100">
+            <label> распределено </label>
+            <input readonly="true" value="{{getDividingSum()}}">
         </md-input-container>
 
-
+        <md-button readonly="needAlign()" md-primary onClick="alignDividing">
+            выравнять
+        </md-button>
     </md-content>
     <md-content layout="row" flex="80">
-
-            <div ng-repeat="element in data.dividingList" layout="column" layout-align="center center">
-                <md-slider-container flex="10">
-                    <md-input-container>
-                        <input flex type="number" ng-model="element.value" aria-label="bass"
-                               aria-controls="bass-slider">
-                    </md-input-container>
-                    <md-slider  md-vertical md-discrete ng-model="element.value" min="0" max="{{data.quarterPlantCrop}}" step="0.1" md-primary aria-label="element.index"></md-slider>
-                    </md-slider>
-                    <div> {{element.title}}</div>
-                </md-slider-container>
-            </div>
+        <div ng-repeat="element in data.dividingList" layout="column" layout-align="start center">
+            <md-slider-container flex="10">
+                <md-input-container>
+                    <input flex type="number" ng-model="element.value" aria-label="bass"
+                           aria-controls="bass-slider">
+                </md-input-container>
+                <md-slider md-vertical md-discrete ng-model="element.value" min="0" max="{{data.quarterPlantCrop}}"
+                           step="0.1" md-primary aria-label="element.index"></md-slider>
+                </md-slider>
+                <div> {{element.title}}</div>
+            </md-slider-container>
+        </div>
 
     </md-content>
 </div>
