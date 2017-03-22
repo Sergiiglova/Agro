@@ -22,9 +22,13 @@
             <input readonly="true" value="{{getDividingSum()}}">
         </md-input-container>
 
-        <md-button readonly="needAlign()" md-primary onClick="alignDividing">
+        <md-button md-primary  ng-click="alignDividing()">
             выравнять
         </md-button>
+        <md-button md-primary md-accent ng-click="plantCalculate()">
+            проверить
+        </md-button>
+
     </md-content>
     <md-content layout="row" flex="80">
         <div ng-repeat="element in data.dividingList" layout="column" layout-align="start center">
@@ -34,11 +38,14 @@
                            aria-controls="bass-slider">
                 </md-input-container>
                 <md-slider md-vertical md-discrete ng-model="element.value" min="0" max="{{data.quarterPlantCrop}}"
-                           step="0.1" md-primary aria-label="element.index"></md-slider>
+                           step="0.01" md-primary aria-label="element.index"></md-slider>
                 </md-slider>
                 <div> {{element.title}}</div>
             </md-slider-container>
         </div>
 
     </md-content>
+
 </div>
+<chart-form></chart-form>
+<bar-chart height="options.height" data="chartData" hovered="hovered(args)"></bar-chart>

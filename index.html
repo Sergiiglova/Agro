@@ -11,7 +11,6 @@
     <link rel="stylesheet" href="https://code.getmdl.io/1.1.0/material.indigo-pink.min.css">
 
 
-
     <!-- Angular -->
     <script type="text/javascript" src="lib/angular.js"></script>
     <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-route.js"></script>
@@ -33,24 +32,23 @@
 
     <!-- D3js-->
 
-    <script src="//d3js.org/d3.v4.min.js"></script>
+    <script src="//d3js.org/d3.v3.min.js"></script>
 
 
     <script type="text/javascript" src="app/app.js"></script>
     <!--<script type="text/javascript" src="app/voronoi/voronoi.js"></script>-->
-    <script type="text/javascript" src="app/controllers/MainCtrl.js"></script>
+    <script type="text/javascript" src="app/voronoi/reusable_chart.js"></script>
+    <script type="text/javascript" src="app/controllers/mainCtrl.js"></script>
 
     <!--home-->
     <script type="text/javascript" src="app/home/directives/wsHome.js"></script>
     <script type="text/javascript" src="app/home/controllers/HomeCtrl.js"></script>
 </head>
-<body ng-app="wise" ng-controller="MainCtrl" layout-fill layout="column">
+
+<body ng-app="wise" ng-controller="mainCtrl" layout-fill layout="column">
 
 <div ng-view>
-    <ws-home data="{}">
 
-    </ws-home>
-    <svg width="960" height="500"></svg>
 </div>
 </body>
 </html>
