@@ -69,7 +69,7 @@ var app = angular.module('wise', ['ngMaterial', 'wise.home','angular-carousel','
                 restrict: 'E',
                 replace: true,
                 controller: function AppCtrl ($scope) {
-                    $scope.update = function(d, i){ $scope.data = randomData(); };
+                    $scope.update = function(d, i){ $scope.chartData = randomData(); };
                     function randomData(){
                         return d3.range(~~(Math.random()*50)+1).map(function(d, i){return ~~(Math.random()*1000);});
                     }
