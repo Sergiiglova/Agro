@@ -7,5 +7,4 @@ angular.module('wise.home').controller('HomeCtrl', ['$scope', '$filter',
             $scope.$apply();
         };
         $scope.barValue = 'None';
-
 }]);

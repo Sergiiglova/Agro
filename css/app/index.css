@@ -9,3 +9,7 @@ path {
     stroke: #000;
     stroke-width: 2px;
 }
+.navBardemoBasicUsage md-content .ext-content {
+    padding: 50px;
+    margin: 20px;
+    background-color: #FFF2E0; }

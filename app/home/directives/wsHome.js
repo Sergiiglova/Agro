@@ -12,24 +12,28 @@ angular.module('wise.home')
         // TODO - recalculate plant
         link: function (scope) {
             scope.options = {width: 500, height: 300, 'bar': 'aaa'};
-            scope.chartData = [1, 2, 3, 4];
+
 
             scope.barValue = 'None';
 
             scope.data = {};
             data = scope.data;
             data.plantCrop = 25.6
-            data.plantRadius = 13.6;
-            data.radiusDividingCount = 10;
+            data.plantRadius = 12.45;
+            data.radiusDividingCount = 20;
             data.dividingList = [];
             var rStep = data.plantRadius / data.radiusDividingCount;
             data.quarterPlantCrop = data.plantCrop / 4;
-
+            scope.chartData = [];
             for (var i = 0; i < data.radiusDividingCount; i++) {
                 var rStart = rStep * i;
                 var rEnd = rStep * (i + 1);
                 var s =Math.PI/4*(rEnd*rEnd -rStart*rStart);
-                var value = data.quarterPlantCrop / data.radiusDividingCount;
+                var value =
+                    // Math.sqrt(data.plantRadius) -
+                    Math.sqrt((i+1)*rStep);
+                    // data.quarterPlantCrop / data.radiusDividingCount;
+                scope.chartData.push(value);
                 data.dividingList.push({
                     value: value,
                     rStep: rStep,
@@ -182,7 +186,9 @@ angular.module('wise.home')
             restrict: 'E',
             replace: true,
             controller: function AppCtrl ($scope) {
-                $scope.update = function(d, i){ $scope.chartData = randomData(); };
+                $scope.update = function(d, i){
+                    $scope.chartData = randomData();
+                };
                 function randomData(){
                     return d3.range(~~(Math.random()*50)+1).map(function(d, i){return ~~(Math.random()*1000);});
                 }

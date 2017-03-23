@@ -1,3 +1,4 @@
+
 <div layout="row">
     <md-content layout="column" flex="10">
         <md-input-container>
@@ -22,10 +23,10 @@
             <input readonly="true" value="{{getDividingSum()}}">
         </md-input-container>
 
-        <md-button md-primary  ng-click="alignDividing()">
+        <md-button class="md-raised md-primary" ng-click="alignDividing()">
             выравнять
         </md-button>
-        <md-button md-primary md-accent ng-click="plantCalculate()">
+        <md-button class="md-raised md-primary" ng-click="plantCalculate()">
             проверить
         </md-button>
 
@@ -37,7 +38,8 @@
                     <input flex type="number" ng-model="element.value" aria-label="bass"
                            aria-controls="bass-slider">
                 </md-input-container>
-                <md-slider md-vertical md-discrete ng-model="element.value" min="0" max="{{data.quarterPlantCrop}}"
+                <md-slider md-vertical md-discrete ng-model="element.value" min="0"
+                           max="{{data.quarterPlantCrop}}"
                            step="0.01" md-primary aria-label="element.index"></md-slider>
                 </md-slider>
                 <div> {{element.title}}</div>
