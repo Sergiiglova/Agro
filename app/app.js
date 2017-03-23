@@ -19,10 +19,10 @@ angular.module('d3', [])
             var scriptTag = $document[0].createElement('script');
             scriptTag.type = 'text/javascript';
             scriptTag.async = true;
-            scriptTag.src = 'http://d3js.org/d3.v3.min.js';
+            scriptTag.src = '/lib/d3.js';
             scriptTag.onreadystatechange = function () {
                 if (this.readyState == 'complete') onScriptLoad();
-            }
+            };
             scriptTag.onload = onScriptLoad;
 
             var s = $document[0].getElementsByTagName('body')[0];
@@ -30,7 +30,7 @@ angular.module('d3', [])
 
             return d3service;
         }]);
-var app = angular.module('wise', ['d3','ngMaterial', 'wise.home', 'angular-carousel', 'ngRoute', 'ngDialog'])
+var app = angular.module('wise', ['ngMaterial', 'wise.home', 'angular-carousel', 'ngRoute', 'ngDialog','d3'])
     .config(['$locationProvider', '$routeProvider', '$mdThemingProvider',
         function ($locationProvider, $routeProvider, $mdThemingProvider) {
 
