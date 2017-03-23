@@ -3,22 +3,23 @@ angular.module('wise.home', []);
 var app = angular.module('wise', ['ngMaterial', 'wise.home', 'angular-carousel', 'ngRoute', 'ngDialog'])
     .config(['$locationProvider', '$routeProvider', '$mdThemingProvider',
         function ($locationProvider, $routeProvider, $mdThemingProvider) {
-            $routeProvider
+
+        $routeProvider
             // .when('/login', {
             //     templateUrl: 'app/user/views/login.html',
             //     controller: 'AuthCtrl'
             // })
                 .when('/home', {
-                    template: '<ws-home></ws-home>'
 
-
-                })
-                .when('/experiment', {
-                    // template:
-                    templateUrl: 'app/experiment/views/experiment.html',
-                    title: 'эксперимент'
+                    template: '<ws-home pages="pages"></ws-home>'
 
                 })
+                // .when('/experiment', {
+                //     // template:
+                //     templateUrl: 'app/experiment/views/experiment.html',
+                //     title: 'эксперимент'
+                //
+                // })
                 // .when('/vision', {
                 //     template: '<ws-vision></ws-vision>'
                 // })
@@ -42,7 +43,5 @@ var app = angular.module('wise', ['ngMaterial', 'wise.home', 'angular-carousel',
             $mdThemingProvider.theme('default');
 
         }])
-
-
 ;
 

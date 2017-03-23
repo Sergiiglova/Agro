@@ -4,7 +4,8 @@ angular.module('wise.home')
         restrict: 'AE',
         scope: {
             data: '=ngModel',
-            getDividingSum: '&'
+            getDividingSum: '&',
+            pages: '=',
         },
         templateUrl: 'app/home/views/home.html',
         controller: 'HomeCtrl',
