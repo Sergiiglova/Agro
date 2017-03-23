@@ -50,24 +50,27 @@
     <md-nav-bar
             md-selected-nav-item="currentNavItem"
             nav-bar-aria-label="navigation links">
-        <md-nav-item md-nav-click="goto('1')" name="page1">
-            Page One
+        <md-nav-item md-nav-click="goto('experimentModel')" name="experimentModel">
+            Досліди
         </md-nav-item>
-        <md-nav-item md-nav-click="goto('2')" name="page2">
-            Page Two
+        <md-nav-item md-nav-click="goto('plantMode')" name="plantMode">
+            Модель рослини
         </md-nav-item>
-
-        <!--<md-nav-item md-nav-click="goto('page3')" name="page3">-->
-            <!--Page Three-->
-        <!--</md-nav-item>-->
+        <md-nav-item md-nav-click="goto('cropModel')" name="cropModel">
+            Модель урожаю
+        </md-nav-item>
 
         <!--<md-nav-item md-nav-href="#experiment" name="Exp">Page Four</md-nav-item>-->
         <!--<md-nav-item md-nav-sref="app.page5" name="page4">Page Five</md-nav-item>-->
         <!--&lt;!&ndash;You can also add options for the <code>ui-sref-opts</code> attribute.&ndash;&gt;-->
         <!--<md-nav-item md-nav-sref="page6" sref-opts="{reload:true, notify:true}">-->
-            <!--Page Six-->
+        <!--Page Six-->
         <!--</md-nav-item>-->
     </md-nav-bar>
+
+    <div ng-view>
+
+    </div>
     <div class="ext-content">
         External content for `<span>{{currentNavItem}}</span>`.
     </div>
@@ -75,8 +78,6 @@
     <md-checkbox ng-model="disableInkBar">Disable Ink Bar</md-checkbox>
 
 </md-content>
-<div ng-view>
 
-</div>
 </body>
 </html>

@@ -1,56 +1,64 @@
-<div ng-show="pages.first">
-    experiment
-</div>
+<md-content flex layout-padding>
 
-<div ng-show="pages.second" layout="row">
-    <md-content layout="column" flex="10">
-        <md-input-container>
-            <label> Урожай 1 в г. </label>
-            <input ng-model="data.plantCrop" type="number" min="0" max="1000">
-        </md-input-container>
-        <md-input-container>
-            <label> Радиус взаимодействия в см.</label>
-            <input ng-model="data.plantRadius" type="decimal" min="0" max="100">
-        </md-input-container>
-        <md-input-container>
-            <label> Количество делений радиуса</label>
-            <input ng-model="data.radiusDividingCount" type="number" min="0" max="100">
-        </md-input-container>
-        <md-input-container>
-            <label> г на прямой</label>
-            <input readonly="true" ng-model="data.quarterPlantCrop" type="number" min="0" max="100">
-        </md-input-container>
 
-        <md-input-container>
-            <label> распределено </label>
-            <input readonly="true" value="{{getDividingSum()}}">
-        </md-input-container>
+    <div ng-show="pages.experimentModel">
+        experiment idiv
+    </div>
 
-        <md-button class="md-raised md-primary" ng-click="alignDividing()">
-            выравнять
-        </md-button>
-        <md-button class="md-raised md-primary" ng-click="plantCalculate()">
-            проверить
-        </md-button>
+    <div ng-show="pages.plantModel" layout="row">
+        <md-content layout="column" flex="10">
+            <md-input-container>
+                <label> Урожай 1 в г. </label>
+                <input ng-model="data.plantCrop" type="number" min="0" max="1000">
+            </md-input-container>
+            <md-input-container>
+                <label> Радиус взаимодействия в см.</label>
+                <input ng-model="data.plantRadius" type="decimal" min="0" max="100">
+            </md-input-container>
+            <md-input-container>
+                <label> Количество делений радиуса</label>
+                <input ng-model="data.radiusDividingCount" type="number" min="0" max="100">
+            </md-input-container>
+            <md-input-container>
+                <label> г на прямой</label>
+                <input readonly="true" ng-model="data.quarterPlantCrop" type="number" min="0" max="100">
+            </md-input-container>
 
+            <md-input-container>
+                <label> распределено </label>
+                <input readonly="true" value="{{getDividingSum()}}">
+            </md-input-container>
+
+            <md-button class="md-raised md-primary" ng-click="alignDividing()">
+                выравнять
+            </md-button>
+            <md-button class="md-raised md-primary" ng-click="plantCalculate()">
+                проверить
+            </md-button>
+
+        </md-content>
+        <md-content layout="row" flex="80">
+            <div ng-repeat="element in data.dividingList" layout="column" layout-align="start center">
+                <md-slider-container flex="10">
+                    <md-input-container>
+                        <input flex type="number" ng-model="element.value" aria-label="bass"
+                               aria-controls="bass-slider">
+                    </md-input-container>
+                    <md-slider md-vertical md-discrete ng-model="element.value" min="0"
+                               max="{{data.quarterPlantCrop}}"
+                               step="0.01" md-primary aria-label="element.index"></md-slider>
+                    </md-slider>
+                    <div> {{element.title}}</div>
+                </md-slider-container>
+            </div>
+
+        </md-content>
+
+    </div>
+    <chart-form></chart-form>
+    <bar-chart height="options.height" data="chartData" hovered="hovered(args)"></bar-chart>
+
+    <md-content ng-show="pages.cropModel" class="md-primary">
+        oloo
     </md-content>
-    <md-content layout="row" flex="80">
-        <div ng-repeat="element in data.dividingList" layout="column" layout-align="start center">
-            <md-slider-container flex="10">
-                <md-input-container>
-                    <input flex type="number" ng-model="element.value" aria-label="bass"
-                           aria-controls="bass-slider">
-                </md-input-container>
-                <md-slider md-vertical md-discrete ng-model="element.value" min="0"
-                           max="{{data.quarterPlantCrop}}"
-                           step="0.01" md-primary aria-label="element.index"></md-slider>
-                </md-slider>
-                <div> {{element.title}}</div>
-            </md-slider-container>
-        </div>
-
-    </md-content>
-
-</div>
-<chart-form></chart-form>
-<bar-chart height="options.height" data="chartData" hovered="hovered(args)"></bar-chart>
+</md-content>

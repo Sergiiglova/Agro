@@ -3,14 +3,23 @@ app.controller('mainCtrl', ['$scope', '$timeout', '$mdSidenav', '$mdDialog', '$l
 
         $scope.pages = {first: true, second: true,third:true};
         $scope.goto = function (divName) {
-            if (divName == "1") {
-                $scope.pages.first = true;
-                $scope.pages.second = false;
-                $scope.pages.third = false;
-            } else {
-                $scope.pages.first = false;
-                $scope.pages.second = true;
-                $scope.pages.third = false;
+            $scope.pages.experimentModel = false;
+            $scope.pages.plantModel = false;
+            $scope.pages.cropModel = false;
+            switch (divName) {
+                case "experimentModel":
+                    $scope.pages.experimentModel = true;
+                    break;
+                case "plantModel":
+                    $scope.pages.plantModel = true;
+                    break;
+                case "cropModel":
+                    $scope.pages.cropModel = true;
+                    break;
+                default:
+                    $scope.pages.experimentModel = true;
+                    $scope.pages.plantModel = true;
+                    $scope.pages.cropModel = true;
             }
         }
     }]);
