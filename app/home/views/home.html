@@ -1,8 +1,6 @@
 <md-content flex layout-padding>
-
-
     <div ng-show="pages.experimentModel">
-        experiment idiv
+        experiment div
     </div>
 
     <div ng-show="pages.plantModel" layout="row">
@@ -53,10 +51,10 @@
             </div>
 
         </md-content>
+        <chart-form></chart-form>
+        <bar-chart height="options.height" data="chartData" hovered="hovered(args)"></bar-chart>
 
     </div>
-    <chart-form></chart-form>
-    <bar-chart height="options.height" data="chartData" hovered="hovered(args)"></bar-chart>
 
     <md-content ng-show="pages.cropModel" class="md-primary">
         oloo
