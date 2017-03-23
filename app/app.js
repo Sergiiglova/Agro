@@ -1,6 +1,36 @@
 angular.module('wise.home', []);
+angular.module('d3', [])
+    .factory('d3Service', ['$document', '$window', '$q', '$rootScope',
+        function ($document, $window, $q, $rootScope) {
+            var d = $q.defer(),
+                d3service = {
+                    d3: function () {
+                        return d.promise;
+                    }
+                };
 
-var app = angular.module('wise', ['ngMaterial', 'wise.home', 'angular-carousel', 'ngRoute', 'ngDialog'])
+            function onScriptLoad() {
+                // Load client in the browser
+                $rootScope.$apply(function () {
+                    d.resolve($window.d3);
+                });
+            }
+
+            var scriptTag = $document[0].createElement('script');
+            scriptTag.type = 'text/javascript';
+            scriptTag.async = true;
+            scriptTag.src = 'http://d3js.org/d3.v3.min.js';
+            scriptTag.onreadystatechange = function () {
+                if (this.readyState == 'complete') onScriptLoad();
+            }
+            scriptTag.onload = onScriptLoad;
+
+            var s = $document[0].getElementsByTagName('body')[0];
+            s.appendChild(scriptTag);
+
+            return d3service;
+        }]);
+var app = angular.module('wise', ['d3','ngMaterial', 'wise.home', 'angular-carousel', 'ngRoute', 'ngDialog'])
     .config(['$locationProvider', '$routeProvider', '$mdThemingProvider',
         function ($locationProvider, $routeProvider, $mdThemingProvider) {
 
