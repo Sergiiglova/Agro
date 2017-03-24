@@ -109,6 +109,11 @@ d3.custom.barChart = function module() {
         ease = _x;
         return this;
     };
-    d3.rebind(exports, dispatch, 'on');
+
+    exports.on('customHover', function (d, i) {
+        scope.hovered({args: d});
+    });
+
+    // d3.rebind(exports, dispatch, 'on');
     return exports;
 };
