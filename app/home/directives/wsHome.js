@@ -12,6 +12,50 @@ angular.module('wise.home', ['d3'])
 
             // TODO - recalculate plant
             link: function (scope) {
+                scope.sow = function () {
+
+                };
+
+                scope.test = function () {
+                    data.k = 2.3
+                    data.precision = 20;
+                    var dx = dy = (data.plantRadius / data.precision);
+
+                    data.oppression = [[]];
+                    var j = 0;
+                    for (var i = 0; i < data.precision; i++) {
+                        var x = dx * (i + 1);
+                        var value1 = 6.14321 - 2.30628 * Math.log(x - dx);
+                        var value2 = 6.14321 - 2.30628 * Math.log(x + dx);
+                        var value = value1 - value2;
+                        data.oppression[i] = {};
+                        data.oppression[i][j] = {
+                            dxUgnet: value,
+                            x: x,
+                            jCount: Math.round(Math.sqrt(data.plantRadius * data.plantRadius - x * x) / dy),
+                            i: i
+                        }
+                        ;
+                        console.log(i + "{" + x + "," + data.oppression[i][j].dxUgnet + "}" + "jcount" + data.oppression[i][j].jCount);
+                        console.log();
+                    }
+                    var dy = dx;
+
+                    // var i = data.precision;
+                    // var x = dx * (i + 1);
+                    // var hvostIntegrala = data.k / x;
+                    // console.log("hvost" + hvostIntegrala)
+                    // for (var i = 0; i < data.precision; i++) {
+                    //     var x = dx * (i + 1);
+                    //     data.mainOppression[i] = data.mainOppression[i] - hvostIntegrala;
+                    //     console.log("{" + x + "," + data.mainOppression[i] + "}");
+                    //     console.log();
+                    // }
+
+
+                };
+
+
                 scope.options = {width: 500, height: 300, 'bar': 'aaa'};
 
 
@@ -22,7 +66,9 @@ angular.module('wise.home', ['d3'])
                 data.plantCrop = 25.6
                 data.plantRadius = 12.45;
                 data.radiusDividingCount = 20;
-                data.dividingList = [];
+
+
+                scope.data.dividingList = [];
                 var rStep = data.plantRadius / data.radiusDividingCount;
                 data.quarterPlantCrop = data.plantCrop / 4;
                 scope.chartData = [];
@@ -31,8 +77,9 @@ angular.module('wise.home', ['d3'])
                     var rEnd = rStep * (i + 1);
                     var s = Math.PI / 4 * (rEnd * rEnd - rStart * rStart);
                     var value =
-                        // Math.sqrt(data.plantRadius) -
-                        Math.sqrt((i + 1) * rStep);
+                        4.5 + (i + 1) * rStep / 2
+                    // Math.sqrt(data.plantRadius) -
+                    // Math.sqrt((i + 1) * rStep);
                     // data.quarterPlantCrop / data.radiusDividingCount;
                     scope.chartData.push(value);
                     data.dividingList.push({
@@ -47,6 +94,19 @@ angular.module('wise.home', ['d3'])
                     });
 
                 }
+
+                scope.test();
+                scope.initializeCropData = function () {
+                    var cropData = scope.cropData = {};
+                    cropData.cropTypes = [{name: "Рядками", value: "rows"}, {
+                        name: "Будь як",
+                        value: "random"
+                    }, {name: "Квадратний", value: "square"}, {name: "Гексагоном", value: "hexagon"}];
+                    cropData.cropType = cropData.cropTypes[0].value;
+                    cropData.rowSpace = 12;
+                    cropData.columnSpace = 5;
+                    cropData.plantData = scope.data;
+                };
 
                 scope.recalc = function () {
                     console.log("recalculated");
@@ -152,6 +212,7 @@ angular.module('wise.home', ['d3'])
                     }
                     return data.dividingList[data.dividingList.length - 1].destiny;
                 }
+                scope.initializeCropData();
             }
         }
     })
@@ -160,7 +221,10 @@ angular.module('wise.home', ['d3'])
         function ($window, $timeout, d3Service) {
             return {
                 restrict: 'EA',
-                scope: {},
+                scope: {
+                    cropData: '=ngModel',
+
+                },
                 link: function (scope, element, attrs) {
                     d3Service.d3().then(function (d3) {
                         var width = 1900,
@@ -172,15 +236,47 @@ angular.module('wise.home', ['d3'])
                             .attr("height", height)
                             .style('width', '100%');
 
+                        var cropData = scope.cropData;
+                        var plantData = cropData.plantData;
 
-                            radius = 15;
 
-                        var circles = d3.range(30).map(function () {
-                            return {
-                                x: Math.round(Math.random() * (width - radius * 20) + radius),
-                                y: Math.round(Math.random() * (height - radius * 20) + radius)
-                            };
-                        });
+                            // TODO - radius at sm
+                        var mmInPixel = 1;
+                        var mmFieldWidth = width * mmInPixel;
+                        var mmFieldHeight = height * mmInPixel;
+                        var smToMM = 10;
+                        var mmRadius = plantData.plantRadius*smToMM;
+                        var circles = [];
+
+
+                        switch (cropData.cropType) {
+                            case "rows":
+                                var y = 0.5 * cropData.rowSpace*smToMM; // отступ от краев
+                                while (y < mmFieldHeight) {
+                                    var x = 0.5 * cropData.columnSpace+smToMM;
+                                    while (x < mmFieldWidth) {
+                                        circles.push({x: x, y: y})
+                                        x += cropData.columnSpace*smToMM;
+                                    }
+                                    y += cropData.rowSpace*smToMM;
+                                }
+                                break;
+                            case "square":
+                                break;
+                            case "hexagon":
+                                break;
+
+                            case "random":
+                            default:
+                                circles = d3.range(200).map(function () {
+                                    return {
+                                        x: Math.round(Math.random() * (mmFieldWidth - mmRadius * 20) + mmRadius),
+                                        y: Math.round(Math.random() * (mmFieldHeight - mmRadius * 20) + mmRadius)
+                                    };
+                                });
+                                break;
+                        }
+
 
                         var color = d3.scaleOrdinal()
                             .range(d3.schemeCategory20);
@@ -201,7 +297,7 @@ angular.module('wise.home', ['d3'])
                                 .on("start", dragstarted)
                                 .on("drag", dragged)
                                 .on("end", dragended));
-
+                        var poligons = voronoi.polygons(circles)
                         var cell = circle.append("path")
                             .data(voronoi.polygons(circles))
                             .attr("d", renderCell)
@@ -228,7 +324,7 @@ angular.module('wise.home', ['d3'])
                             .attr("cy", function (d) {
                                 return d.y;
                             })
-                            .attr("r", radius)
+                            .attr("r", mmRadius)
                             .style("fill", function (d, i) {
                                 return color(i);
                             });
@@ -248,6 +344,7 @@ angular.module('wise.home', ['d3'])
                         function dragged(d) {
                             d3.select(this).select("circle").attr("cx", d.x = d3.event.x).attr("cy", d.y = d3.event.y);
                             cell = cell.data(voronoi.polygons(circles)).attr("d", renderCell);
+
                         }
 
                         function dragended(d, i) {
@@ -267,136 +364,39 @@ angular.module('wise.home', ['d3'])
         function ($window, $timeout, d3Service) {
             return {
                 restrict: 'EA',
-                scope: {
+                scope: {},
 
-                },
-                // link: function (scope, element, attrs) {
-                //     d3Service.d3().then(function (d3) {
-                //         var svg = d3.select(element[0])
-                //             .append('svg')
-                //             .style('width', '100%');
-                //
-                //         width = 500,
-                //             height = 500,
-                //
-                //             radius = 35;
-                //
-                //         var circles = d3.range(30).map(function () {
-                //             return {
-                //                 x: Math.round(Math.random() * (width - radius * 2) + radius),
-                //                 y: Math.round(Math.random() * (height - radius * 2) + radius)
-                //             };
-                //         });
-                //
-                //         var color = d3.scaleOrdinal()
-                //             .range(d3.schemeCategory20);
-                //
-                //         var voronoi = d3.voronoi()
-                //             .x(function (d) {
-                //                 return d.x;
-                //             })
-                //             .y(function (d) {
-                //                 return d.y;
-                //             })
-                //             .extent([[-1, -1], [width + 1, height + 1]]);
-                //
-                //         var circle = svg.selectAll("g")
-                //             .data(circles)
-                //             .enter().append("g")
-                //             .call(d3.drag()
-                //                 .on("start", dragstarted)
-                //                 .on("drag", dragged)
-                //                 .on("end", dragended));
-                //
-                //         var cell = circle.append("path")
-                //             .data(voronoi.polygons(circles))
-                //             .attr("d", renderCell)
-                //             .attr("id", function (d, i) {
-                //                 return "cell-" + i;
-                //             });
-                //
-                //         circle.append("clipPath")
-                //             .attr("id", function (d, i) {
-                //                 return "clip-" + i;
-                //             })
-                //             .append("use")
-                //             .attr("xlink:href", function (d, i) {
-                //                 return "#cell-" + i;
-                //             });
-                //
-                //         circle.append("circle")
-                //             .attr("clip-path", function (d, i) {
-                //                 return "url(#clip-" + i + ")";
-                //             })
-                //             .attr("cx", function (d) {
-                //                 return d.x;
-                //             })
-                //             .attr("cy", function (d) {
-                //                 return d.y;
-                //             })
-                //             .attr("r", radius)
-                //             .style("fill", function (d, i) {
-                //                 return color(i);
-                //             });
-                //
-                //         circle.on("click", function (d) {
-                //             testClick(d);
-                //         });
-                //
-                //         function testClick(d) {
-                //             console.log("ebanko");
-                //         }
-                //
-                //         function dragstarted(d) {
-                //             d3.select(this).raise().classed("active", true);
-                //         }
-                //
-                //         function dragged(d) {
-                //             d3.select(this).select("circle").attr("cx", d.x = d3.event.x).attr("cy", d.y = d3.event.y);
-                //             cell = cell.data(voronoi.polygons(circles)).attr("d", renderCell);
-                //         }
-                //
-                //         function dragended(d, i) {
-                //             d3.select(this).classed("active", false);
-                //         }
-                //
-                //         function renderCell(d) {
-                //             return d == null ? null : "M" + d.join("L") + "Z";
-                //         }
-                //
-                //     });
-                // }
             };
         })
 
-        // function () {
-        //
-        // var chart = d3.custom.barChart();
-        // return {
-        //     restrict: 'E',
-        //     replace: true,
-        //     template: '<div class="chart"></div>',
-        //     scope: {
-        //         height: '=height',
-        //         data: '=data',
-        //         hovered: '&hovered'
-        //     },
-        //     link: function (scope, element, attrs) {
-        //         var chartEl = d3.select(element[0]);
-        //
-        //         chart.on('customHover', function (d, i) {
-        //             scope.hovered({args: d});
-        //         });
-        //
-        //         scope.$watch('data', function (newVal, oldVal) {
-        //             chartEl.datum(newVal).call(chart);
-        //         });
-        //
-        //         scope.$watch('height', function (d, i) {
-        //             chartEl.call(chart.height(scope.height));
-        //         })
-        //     }
-        // }
+    // function () {
+    //
+    // var chart = d3.custom.barChart();
+    // return {
+    //     restrict: 'E',
+    //     replace: true,
+    //     template: '<div class="chart"></div>',
+    //     scope: {
+    //         height: '=height',
+    //         data: '=data',
+    //         hovered: '&hovered'
+    //     },
+    //     link: function (scope, element, attrs) {
+    //         var chartEl = d3.select(element[0]);
+    //
+    //         chart.on('customHover', function (d, i) {
+    //             scope.hovered({args: d});
+    //         });
+    //
+    //         scope.$watch('data', function (newVal, oldVal) {
+    //             chartEl.datum(newVal).call(chart);
+    //         });
+    //
+    //         scope.$watch('height', function (d, i) {
+    //             chartEl.call(chart.height(scope.height));
+    //         })
+    //     }
+    // }
     // })
     .directive('chartForm', function () {
         return {

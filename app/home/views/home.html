@@ -57,8 +57,40 @@
     </div>
 
     <md-content ng-show="pages.cropModel" class="md-primary" flex>
+        <div layout="row">
+            <div layout="column">
+                <md-button class="md-raised md-primary" ng-click="sow()">
+                    Посіяти
+                </md-button>
+                <md-input-container>
+                    <label>Посів</label>
+                    <md-select name="type" ng-model="cropData.cropType" required>
+                        <md-option ng-repeat="cropType in cropData.cropTypes" value="{{cropType.value}}">
+                            <div layout="row">
+                                <!--<ws-iconed-element element="priority" small="true"></ws-iconed-element>-->
+                                {{cropType.name}}
+                            </div>
+                        </md-option>
+                    </md-select>
+                </md-input-container>
+                <md-input-container>
+                    <label>Міжряддя, см.</label>
+                    <input ng-model="cropData.rowSpace" type="number" min="1" max="100">
+                </md-input-container>
+                <md-input-container>
+                    <label>Дистанція, см.</label>
+                    <input ng-model="cropData.columnSpace" type="number" min="1" max="cropData.rowSpace">
+                </md-input-container>
+                <md-input-container>
+                    <label>Норма висіву</label>
+                    <input ng-model="cropData.seedingRate" type="number" min="1" max="1000">
+                </md-input-container>
+            </div>
 
-        <div flex id="chart" d3-bars bar-height="20" bar-padding="5"></div>
+
+            <div flex id="chart" ng-Model="cropData" d3-bars bar-height="20" bar-padding="5"></div>
+        </div>
+
 
     </md-content>
 </md-content>
