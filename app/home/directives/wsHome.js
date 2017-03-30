@@ -19,7 +19,7 @@ angular.module('wise.home', ['d3'])
                 };
 
                 scope.test = function () {
-                    data.k = 2.3
+                    data.k = 2.30628;
                     data.precision = 20;
                     var dx = dy = (data.plantRadius / data.precision);
 
@@ -27,8 +27,8 @@ angular.module('wise.home', ['d3'])
                     var j = 0;
                     for (var i = 0; i < data.precision; i++) {
                         var x = dx * (i + 1);
-                        var value1 = 6.14321 - 2.30628 * Math.log(x - dx);
-                        var value2 = 6.14321 - 2.30628 * Math.log(x + dx);
+                        var value1 = 6.14321 - data.k * Math.log(x - dx);
+                        var value2 = 6.14321 - data.k * Math.log(x + dx);
                         var value = value1 - value2;
                         data.oppression[i] = {};
                         data.oppression[i][j] = {
@@ -41,20 +41,6 @@ angular.module('wise.home', ['d3'])
                         console.log(i + "{" + x + "," + data.oppression[i][j].dxUgnet + "}" + "jcount" + data.oppression[i][j].jCount);
                         console.log();
                     }
-                    var dy = dx;
-
-                    // var i = data.precision;
-                    // var x = dx * (i + 1);
-                    // var hvostIntegrala = data.k / x;
-                    // console.log("hvost" + hvostIntegrala)
-                    // for (var i = 0; i < data.precision; i++) {
-                    //     var x = dx * (i + 1);
-                    //     data.mainOppression[i] = data.mainOppression[i] - hvostIntegrala;
-                    //     console.log("{" + x + "," + data.mainOppression[i] + "}");
-                    //     console.log();
-                    // }
-
-
                 };
 
 
@@ -98,6 +84,7 @@ angular.module('wise.home', ['d3'])
                 }
 
                 scope.test();
+
                 scope.initializeCropData = function () {
                     var cropData = scope.cropData = {};
                     cropData.cropTypes = [{name: "Рядками", value: "rows"}, {
@@ -105,9 +92,19 @@ angular.module('wise.home', ['d3'])
                         value: "random"
                     }, {name: "Квадратний", value: "square"}, {name: "Гексагоном", value: "hexagon"}];
                     cropData.cropType = cropData.cropTypes[0].value;
-                    cropData.rowSpace = 25;
-                    cropData.columnSpace = 12;
+                    cropData.rowSpace = 30;
+                    cropData.columnSpace = 4.7;
                     cropData.plantData = scope.data;
+
+
+                    cropData.width = 1000;
+                    cropData.height = 1000;
+                    cropData.mmInPixel = 1;
+                    cropData.mmFieldWidth = cropData.width * cropData.mmInPixel;
+                    cropData.mmFieldHeight = cropData.height * cropData.mmInPixel;
+                    cropData.smToMM = 10;
+                    cropData.mmRadius = cropData.plantData.plantRadius * cropData.smToMM;
+
                 };
 
                 scope.recalc = function () {
@@ -228,66 +225,87 @@ angular.module('wise.home', ['d3'])
 
                 },
                 link: function (scope, element, attrs) {
-                    // scope.setPlantCrop = function () {
-                    //
-                    //
-                    // };
-
-                    d3Service.d3().then(function (d3) {
-
-                        var width = 1900,
-                            height = 1200;
-
-                        var svg = d3.select("#chart")
-                            .append('svg')
-                            .attr("width", width)
-                            .attr("height", height)
-                            .style('width', '100%');
-
-                        var cropData = scope.cropData;
-                        var plantData = cropData.plantData;
-
-
-                        // TODO - radius at sm
-                        var mmInPixel = 1;
-                        var mmFieldWidth = width * mmInPixel;
-                        var mmFieldHeight = height * mmInPixel;
-                        var smToMM = 10;
-                        var mmRadius = plantData.plantRadius * smToMM;
+                    scope.sow = function (d3) {
                         var circles = [];
-
-
+                        var cropData = scope.cropData;
                         switch (cropData.cropType) {
                             case "rows":
-                                var y = 0.5 * cropData.rowSpace * smToMM; // отступ от краев
-                                while (y < mmFieldHeight) {
-                                    var x = 0.5 * cropData.columnSpace + smToMM;
-                                    while (x < mmFieldWidth) {
+                                var y = 0.5 * cropData.rowSpace * cropData.smToMM; // отступ от краев
+                                while (y < cropData.mmFieldHeight) {
+                                    var x = 0.5 * cropData.columnSpace + cropData.smToMM;
+                                    while (x < cropData.mmFieldWidth) {
                                         circles.push({x: x, y: y})
-                                        x += cropData.columnSpace * smToMM;
+                                        x += cropData.columnSpace * cropData.smToMM;
                                     }
-                                    y += cropData.rowSpace * smToMM;
+                                    y += cropData.rowSpace * cropData.smToMM;
                                 }
                                 break;
                             case "square":
                                 break;
                             case "hexagon":
                                 break;
-
                             case "random":
                             default:
                                 circles = d3.range(200).map(function () {
                                     return {
-                                        x: Math.round(Math.random() * (mmFieldWidth - mmRadius * 20) + mmRadius),
-                                        y: Math.round(Math.random() * (mmFieldHeight - mmRadius * 20) + mmRadius)
+                                        x: Math.round(Math.random() * (cropData.mmFieldWidth - cropData.mmRadius * 20) + cropData.mmRadius),
+                                        y: Math.round(Math.random() * (cropData.mmFieldHeight - cropData.mmRadius * 20) + cropData.mmRadius)
                                     };
                                 });
                                 break;
                         }
+                        return circles;
+                    };
+                    scope.updatePlantsCrop = function (circles, poligons) {
+                        var cropData = scope.cropData;
+                        for (var k = 0; k < circles.length; k++) {
+                            var plant = circles[k];
+                            var poligon = poligons[k];
+                            var step = 1;
+
+                            var minX = plant.x - cropData.mmRadius;
+                            var maxX = plant.x + cropData.mmRadius;
+                            var ugnetenie = 0;
+                            var x = minX;
+
+                            while (x <= maxX) {
+
+                                var dY = Math.sqrt(cropData.mmRadius * cropData.mmRadius - Math.pow((plant.x - x), 2));
+                                var minY = plant.y - dY;
+                                var maxY = plant.y + dY;
+                                var y = minY;
+                                while (y <= maxY) {
+                                    // that is inCircle points(x,y coordinates) for integral
+                                    var vs = poligon;
+                                    var inside = false;
+                                    for (var i = 0, j = vs.length - 1; i < vs.length; j = i++) {
+                                        xi = vs[i][0],
+                                            yi = vs[i][1],
+                                            xj = vs[j][0],
+                                            yj = vs[j][1],
+                                            intersect = ((yi > y) != (yj > y))
+                                                && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+                                        if (intersect) inside = !inside;
+                                    }
+                                    if (!inside) {
+                                        var r = Math.sqrt(Math.pow(x - plant.x, 2) + Math.pow(y - plant.y, 2));
+                                        var ro = cropData.plantData.k / ((r / cropData.smToMM) * 2 * Math.PI);
+                                        ugnetenie += step * step * ro / (cropData.smToMM * cropData.smToMM);
+                                    }
+                                    y += step;
+                                }
+                                x += step;
+                            }
+                            plant.ugnetenie = ugnetenie;
+                            plant.urogainost = cropData.plantData.plantCrop - plant.ugnetenie;
+                        }
+                    };
 
 
-                        var color = d3.scaleOrdinal()
-                            .range(d3.schemeCategory20);
+                    d3Service.d3().then(function (d3) {
+                        var cropData = scope.cropData;
+
+                        var circles = scope.sow(d3);
 
                         var voronoi = d3.voronoi()
                             .x(function (d) {
@@ -296,7 +314,21 @@ angular.module('wise.home', ['d3'])
                             .y(function (d) {
                                 return d.y;
                             })
-                            .extent([[-1, -1], [width + 1, height + 1]]);
+                            .extent([[-1, -1], [cropData.width + 1, cropData.height + 1]]);
+
+                        var polygons = voronoi.polygons(circles);
+
+                        scope.updatePlantsCrop(circles, polygons);
+
+
+                        var svg = d3.select("#chart")
+                            .append('svg')
+                            .attr("width", cropData.width)
+                            .attr("height", cropData.height)
+                            .style('width', '100%');
+
+                        var color = d3.scaleOrdinal()
+                            .range(d3.schemeCategory20);
 
                         var circle = svg.selectAll("g")
                             .data(circles)
@@ -305,53 +337,9 @@ angular.module('wise.home', ['d3'])
                                 .on("start", dragstarted)
                                 .on("drag", dragged)
                                 .on("end", dragended));
-                        var poligons = voronoi.polygons(circles);
-
-                        // var i=3;
-                        for (var i = 0; i < 3; i++) {
-                            var plant = circles[i];
-                            var poligon = poligons[i];
-                            var step = 0.1;
-
-                            var minX = plant.x - mmRadius;
-                            var maxX = plant.x + mmRadius;
-                            var usechenie = 0;
-                            var x = minX;
-                            while (x <= maxX) {
-                                var dY = Math.sqrt(mmRadius * mmRadius - x * x);
-                                minY = plant.y - dY;
-                                maxY = plant.y + dY;
-                                var y = minY;
-                                while (y <= maxY) {
-                                    // that is inCircle points(x,y coordinates) for integral
-                                    y+=step;
-                                }
-                                x += step;
-                            }
-                            var vs = poligon;
-
-
-                        }
-
-                        //
-                        // var xi, xj, i, intersect,
-                        //     x = point[0],
-                        //     y = point[1],
-                        //     inside = false;
-                        // for (var pi = 0, pj = vs.length - 1; pi < vs.length; pj = i++) {
-                        //     xi = vs[i][0],
-                        //         yi = vs[pi],
-                        //         xj = vs[pj][0],
-                        //         yj = vs[pj][1],
-                        //         intersect = ((yi > y) != (yj > y))
-                        //             && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
-                        //     if (intersect) inside = !inside;
-                        // }
-                        // return inside;
-
 
                         var cell = circle.append("path")
-                            .data(voronoi.polygons(circles))
+                            .data(polygons)
                             .attr("d", renderCell)
                             .attr("id", function (d, i) {
                                 return "cell-" + i;
@@ -366,6 +354,7 @@ angular.module('wise.home', ['d3'])
                                 return "#cell-" + i;
                             });
 
+
                         circle.append("circle")
                             .attr("clip-path", function (d, i) {
                                 return "url(#clip-" + i + ")";
@@ -376,18 +365,44 @@ angular.module('wise.home', ['d3'])
                             .attr("cy", function (d) {
                                 return d.y;
                             })
-                            .attr("r", mmRadius)
+                            .attr("r", cropData.mmRadius)
                             .style("fill", function (d, i) {
                                 return color(i);
                             });
 
+
+                        circle.append("circle")
+                            .data(circles)
+                            .attr("cx", function (d) {
+                                return d.x;
+                            })
+                            .attr("cy", function (d) {
+                                return d.y;
+                            })
+                            .attr("r", 2)
+                            .style("fill", function (d, i) {
+                                return "black";
+                            });
+
+                        circle.append("text")
+                            .data(circles)
+                            .attr("x", function (d) {
+                                return d.x - 10;
+                            })
+                            .attr("y", function (d) {
+                                return d.y - 10;
+                            })
+                            .attr("dy", ".35em")
+                            .text(function (d) {
+                                return Math.round(d.urogainost * 100) / 100;
+                            });
 
                         circle.on("click", function (d) {
                             testClick(d);
                         });
 
                         function testClick(d) {
-                            console.log("ebanko");
+                            console.log("testClick");
                         }
 
                         function dragstarted(d) {
@@ -395,8 +410,43 @@ angular.module('wise.home', ['d3'])
                         }
 
                         function dragged(d) {
-                            d3.select(this).select("circle").attr("cx", d.x = d3.event.x).attr("cy", d.y = d3.event.y);
-                            cell = cell.data(voronoi.polygons(circles)).attr("d", renderCell);
+
+                            var circle = svg.selectAll("g")
+                                .data(this)
+                                .attr("cx", d.x = d3.event.x)
+                                .attr("cy", d.y = d3.event.y);
+
+                            var c = d3.select(this);
+
+                            c.selectAll("circle")
+                                .attr("cx", d.x = d3.event.x)
+                                .attr("cy", d.y = d3.event.y);
+
+                            c.select("text")
+                                .attr("x", d.x = d3.event.x)
+                                .attr("y", d.y = d3.event.y);
+
+                            // d3.selectAll("circle").call(foo);
+
+                            cell = cell.data(voronoi.polygons(circles))
+                                .attr("d", renderCell);
+
+                            // circle = svg.selectAll("g")
+                            //     .data(circles);
+                            //
+
+                            // circle.append("text")
+                            //     .data(circles)
+                            //     .attr("x", function (d) {
+                            //         return d.x - 3;
+                            //     })
+                            //     .attr("y", function (d) {
+                            //         return d.y - 3;
+                            //     })
+                            //     .attr("dy", ".35em")
+                            //     .text(function (d) {
+                            //         return "asdfasdf";
+                            //     });
 
                         }
 
