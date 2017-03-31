@@ -432,17 +432,11 @@ angular.module('wise.home', ['d3'])
 
                         scope.polygons = scope.voronoi.polygons(scope.circles);
 
-                        //scope.circle.append("path")
-                        //    .data(scope.polygons)
-                        //    .attr("d", renderCell)
-                        //    .attr("id", function (d, i) {
-                        //        return "cell-" + i;
-                        //    });
 
                         cell = scope.cell
                             .data(scope.polygons)
                             .attr("d", renderCell);
-                    }
+                    };
 
                     function dragended(d, i) {
                         d3.select(this).classed("active", false);
