@@ -270,7 +270,6 @@ angular.module('wise.home', ['d3'])
                             var x = minX;
 
                             while (x <= maxX) {
-
                                 var dY = Math.sqrt(cropData.mmRadius * cropData.mmRadius - Math.pow((plant.x - x), 2));
                                 var minY = plant.y - dY;
                                 var maxY = plant.y + dY;
@@ -302,14 +301,22 @@ angular.module('wise.home', ['d3'])
                         }
                     };
 
+
+                    scope.getSvg = function() {
+                        if (scope.svg) {
+                            return scope.svg;
+                        } else {
+                            return scope.svg = d3.select("#chart")
+                                .append('svg')
+                                .attr("width", scope.cropData.width)
+                                .attr("height", scope.cropData.height)
+                                .style('width', '100%');
+                        }
+                    };
                     scope.fullRefresh = function (d3, circles, polygons) {
                         var cropData = scope.cropData;
 
-                        var svg = d3.select("#chart")
-                            .append('svg')
-                            .attr("width", cropData.width)
-                            .attr("height", cropData.height)
-                            .style('width', '100%');
+                        var svg = scope.getSvg();
 
                         var color = d3.scaleOrdinal()
                             .range(d3.schemeCategory20);
@@ -337,7 +344,6 @@ angular.module('wise.home', ['d3'])
                             .attr("xlink:href", function (d, i) {
                                 return "#cell-" + i;
                             });
-
 
                         circle.append("circle")
                             .attr("clip-path", function (d, i) {
@@ -429,9 +435,7 @@ angular.module('wise.home', ['d3'])
                             .attr("x", d.x = d3.event.x - 10)
                             .attr("y", d.y = d3.event.y - 10);
 
-
                         scope.polygons = scope.voronoi.polygons(scope.circles);
-
 
                         cell = scope.cell
                             .data(scope.polygons)
@@ -439,11 +443,25 @@ angular.module('wise.home', ['d3'])
                     };
 
                     function dragended(d, i) {
+                        // TODO - recalculation only some polygons
+                        scope.updatePlantsCrop(scope.circles, scope.polygons);
+                        //scope.fullRefresh(d3, scope.circles, scope.polygons);
+
+                        scope.circle.select("text")
+                            .data(scope.circles)
+                            .attr("x", function (d) {
+                                return d.x - 10;
+                            })
+                            .attr("y", function (d) {
+                                return d.y - 10;
+                            })
+                            .attr("dy", ".35em")
+                            .text(function (d) {
+                                return Math.round(d.urogainost * 100) / 100;
+                            });
+
+
                         d3.select(this).classed("active", false);
-                        // TODO - recalc
-                        // TODO - redrow
-
-
                     }
 
                     function renderCell(d) {
