@@ -256,6 +256,7 @@ angular.module('wise.home', ['d3'])
                         }
                         return circles;
                     };
+
                     scope.updatePlantsCrop = function (circles, poligons) {
                         var cropData = scope.cropData;
                         for (var k = 0; k < circles.length; k++) {
@@ -301,25 +302,8 @@ angular.module('wise.home', ['d3'])
                         }
                     };
 
-
-                    d3Service.d3().then(function (d3) {
+                    scope.fullRefresh = function (d3, circles, polygons) {
                         var cropData = scope.cropData;
-
-                        var circles = scope.sow(d3);
-
-                        var voronoi = d3.voronoi()
-                            .x(function (d) {
-                                return d.x;
-                            })
-                            .y(function (d) {
-                                return d.y;
-                            })
-                            .extent([[-1, -1], [cropData.width + 1, cropData.height + 1]]);
-
-                        var polygons = voronoi.polygons(circles);
-
-                        scope.updatePlantsCrop(circles, polygons);
-
 
                         var svg = d3.select("#chart")
                             .append('svg')
@@ -330,15 +314,15 @@ angular.module('wise.home', ['d3'])
                         var color = d3.scaleOrdinal()
                             .range(d3.schemeCategory20);
 
-                        var circle = svg.selectAll("g")
+                        var circle = scope.circle = svg.selectAll("g")
                             .data(circles)
                             .enter().append("g")
                             .call(d3.drag()
                                 .on("start", dragstarted)
-                                .on("drag", dragged)
+                                .on("drag", scope.dragged)
                                 .on("end", dragended));
 
-                        var cell = circle.append("path")
+                        var cell = scope.cell = circle.append("path")
                             .data(polygons)
                             .attr("d", renderCell)
                             .attr("id", function (d, i) {
@@ -370,7 +354,6 @@ angular.module('wise.home', ['d3'])
                                 return color(i);
                             });
 
-
                         circle.append("circle")
                             .data(circles)
                             .attr("cx", function (d) {
@@ -401,67 +384,82 @@ angular.module('wise.home', ['d3'])
                             testClick(d);
                         });
 
-                        function testClick(d) {
-                            console.log("testClick");
-                        }
+                    };
 
-                        function dragstarted(d) {
-                            d3.select(this).raise().classed("active", true);
-                        }
+                    d3Service.d3().then(function (d3) {
+                        scope.d3 = d3;
+                        var cropData = scope.cropData;
 
-                        function dragged(d) {
+                        var circles = scope.circles = scope.sow(d3);
 
-                            var circle = svg.selectAll("g")
-                                .data(this)
-                                .attr("cx", d.x = d3.event.x)
-                                .attr("cy", d.y = d3.event.y);
+                        scope.voronoi = d3.voronoi()
+                            .x(function (d) {
+                                return d.x;
+                            })
+                            .y(function (d) {
+                                return d.y;
+                            })
+                            .extent([[-1, -1], [cropData.width + 1, cropData.height + 1]]);
 
-                            var c = d3.select(this);
+                        var polygons = scope.voronoi.polygons(circles);
 
-                            c.selectAll("circle")
-                                .attr("cx", d.x = d3.event.x)
-                                .attr("cy", d.y = d3.event.y);
+                        scope.updatePlantsCrop(circles, polygons);
 
-                            c.select("text")
-                                .attr("x", d.x = d3.event.x)
-                                .attr("y", d.y = d3.event.y);
-
-                            // d3.selectAll("circle").call(foo);
-
-                            cell = cell.data(voronoi.polygons(circles))
-                                .attr("d", renderCell);
-
-                            // circle = svg.selectAll("g")
-                            //     .data(circles);
-                            //
-
-                            // circle.append("text")
-                            //     .data(circles)
-                            //     .attr("x", function (d) {
-                            //         return d.x - 3;
-                            //     })
-                            //     .attr("y", function (d) {
-                            //         return d.y - 3;
-                            //     })
-                            //     .attr("dy", ".35em")
-                            //     .text(function (d) {
-                            //         return "asdfasdf";
-                            //     });
-
-                        }
-
-                        function dragended(d, i) {
-                            d3.select(this).classed("active", false);
-                        }
-
-                        function renderCell(d) {
-                            return d == null ? null : "M" + d.join("L") + "Z";
-                        }
+                        scope.fullRefresh(d3, circles, polygons);
 
                     });
+
+                    function testClick(d) {
+                        console.log("testClick");
+                    }
+
+                    function dragstarted(d) {
+                        d3.select(this).raise().classed("active", true);
+                    }
+
+                    scope.dragged = function(d) {
+                        d3 = scope.d3;
+                        var c = d3.select(this);
+
+                        c.selectAll("circle")
+                            .attr("cx", d.x = d3.event.x)
+                            .attr("cy", d.y = d3.event.y);
+
+                        c.select("text")
+                            .attr("x", d.x = d3.event.x - 10)
+                            .attr("y", d.y = d3.event.y - 10);
+
+
+                        scope.polygons = scope.voronoi.polygons(scope.circles);
+
+                        //scope.circle.append("path")
+                        //    .data(scope.polygons)
+                        //    .attr("d", renderCell)
+                        //    .attr("id", function (d, i) {
+                        //        return "cell-" + i;
+                        //    });
+
+                        cell = scope.cell
+                            .data(scope.polygons)
+                            .attr("d", renderCell);
+                    }
+
+                    function dragended(d, i) {
+                        d3.select(this).classed("active", false);
+                        // TODO - recalc
+                        // TODO - redrow
+
+
+                    }
+
+                    function renderCell(d) {
+                        return d == null ? null : "M" + d.join("L") + "Z";
+                    }
+
                 }
-            };
-        }])
+            }
+        }]
+    )
 
     .directive('barChart',
         function ($window, $timeout, d3Service) {
