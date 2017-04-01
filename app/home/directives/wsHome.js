@@ -104,7 +104,14 @@ angular.module('wise.home', ['d3'])
                     cropData.mmInPixel = 1;
                     cropData.mmFieldWidth = cropData.width * cropData.mmInPixel;
                     cropData.mmFieldHeight = cropData.height * cropData.mmInPixel;
+                    cropData.productivity = 0;
 
+                    // new
+                    cropData.seedingRate = 0;
+                    cropData.productivitySquare = 0;
+                    cropData.productivity = 0;
+                    cropData.totalProductivity = 0;
+                    cropData.plantCount = 0;
                 };
 
                 scope.recalc = function () {
@@ -262,16 +269,24 @@ angular.module('wise.home', ['d3'])
                                     y += dy;
                                     n++;
                                 }
-                                m = Math.round(m/n)-2;
+                                m = Math.round(m / n) - 2;
                                 var x1 = startX + 0.5 * dx;
                                 var y1 = startY + 0.5 * dy;
                                 var x2 = x1 + m * dx;
-                                var y2 = y1 + (n-2) * dy;
+                                var y2 = y1 + (n - 2) * dy;
                                 scope.productivityRectangle = [
                                     {x: x1, y: y1},
                                     {x: x1, y: y2},
                                     {x: x2, y: y2},
                                     {x: x2, y: y1}];
+                                scope.productivityRectangle1 = [
+                                    [x1, y1],
+                                    [x1, y2],
+                                    [x2, y2],
+                                    [x2, y1]
+                                ];
+
+                                cropData.productivitySquare = (m * dx) * ((n - 2) * dy) / (100 * 100 * 100);
                                 break;
                             case "square":
 
@@ -304,6 +319,7 @@ angular.module('wise.home', ['d3'])
 
                     scope.updatePlantsCrop = function (circles, poligons, wihtCheck) {
                         var cropData = scope.cropData;
+
                         for (var k = 0; k < circles.length; k++) {
 
                             var plant = circles[k];
@@ -323,17 +339,7 @@ angular.module('wise.home', ['d3'])
                                     var y = minY;
                                     while (y <= maxY) {
                                         // that is inCircle points(x,y coordinates) for integral
-                                        var vs = poligon;
-                                        var inside = false;
-                                        for (var i = 0, j = vs.length - 1; i < vs.length; j = i++) {
-                                            xi = vs[i][0],
-                                                yi = vs[i][1],
-                                                xj = vs[j][0],
-                                                yj = vs[j][1],
-                                                intersect = ((yi > y) != (yj > y))
-                                                    && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
-                                            if (intersect) inside = !inside;
-                                        }
+                                        var inside = scope.inPolygon(x, y, poligon);
                                         if (!inside) {
                                             var r = Math.sqrt(Math.pow(x - plant.x, 2) + Math.pow(y - plant.y, 2));
                                             var ro = cropData.plantData.k / ((r / cropData.smToMM) * 2 * Math.PI);
@@ -345,10 +351,26 @@ angular.module('wise.home', ['d3'])
                                 }
                                 plant.ugnetenie = ugnetenie;
                                 plant.urogainost = cropData.plantData.plantCrop - plant.ugnetenie;
+                                if (scope.inPolygon(plant.x, plant.y, scope.productivityRectangle1)) {
+                                    cropData.productivity += plant.urogainost;
+                                }
                             }
                         }
                     };
 
+                    scope.inPolygon = function (x, y, vs) {
+                        var inside = false;
+                        for (var i = 0, j = vs.length - 1; i < vs.length; j = i++) {
+                            xi = vs[i][0],
+                                yi = vs[i][1],
+                                xj = vs[j][0],
+                                yj = vs[j][1],
+                                intersect = ((yi > y) != (yj > y))
+                                    && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+                            if (intersect) inside = !inside;
+                        }
+                        return inside;
+                    };
 
                     scope.getSvg = function () {
                         if (scope.svg) {
@@ -381,14 +403,14 @@ angular.module('wise.home', ['d3'])
                         var rectW = scope.productivityRectangle[2].x - scope.productivityRectangle[0].x
                         var rectH = scope.productivityRectangle[2].y - scope.productivityRectangle[0].y
 
-                        var rectangle = circle.append("rect")
-                            .attr("x", scope.productivityRectangle[0].x)
-                            .attr("y", scope.productivityRectangle[0].y)
-                            .attr("width", rectW)
-                            .attr("height", rectH)
-                            .attr("fill", "transparent")
-                            .attr("stroke", "black")
-                            .attr("stroke-width", "3");
+                        //var rectangle = circle.append("rect")
+                        //    .attr("x", scope.productivityRectangle[0].x)
+                        //    .attr("y", scope.productivityRectangle[0].y)
+                        //    .attr("width", rectW)
+                        //    .attr("height", rectH)
+                        //    .attr("fill", "transparent")
+                        //    .attr("stroke", "black")
+                        //    .attr("stroke-width", "3");
 
 
                         var cell = scope.cell = circle.append("path")
@@ -449,8 +471,6 @@ angular.module('wise.home', ['d3'])
                             .text(function (d) {
                                 return Math.round(d.urogainost * 100) / 100;
                             });
-
-
 
                         circle.on("click", function (d) {
                             testClick(d);
