@@ -96,14 +96,14 @@ angular.module('wise.home', ['d3'])
                     cropData.columnSpace = 4.7;
                     cropData.plantData = scope.data;
 
+                    cropData.smToMM = 10;
+                    cropData.mmRadius = cropData.plantData.plantRadius * cropData.smToMM;
+                    cropData.width = 2 * cropData.mmRadius * 5;
+                    cropData.height = 2 * cropData.mmRadius * 8;
 
-                    cropData.width = 1000;
-                    cropData.height = 1000;
                     cropData.mmInPixel = 1;
                     cropData.mmFieldWidth = cropData.width * cropData.mmInPixel;
                     cropData.mmFieldHeight = cropData.height * cropData.mmInPixel;
-                    cropData.smToMM = 10;
-                    cropData.mmRadius = cropData.plantData.plantRadius * cropData.smToMM;
 
                 };
 
@@ -205,12 +205,11 @@ angular.module('wise.home', ['d3'])
                     for (var i = 0; i < data.dividingList.length; i++) {
                         var e = data.dividingList[i];
                         if ((e.rStart < r) && (e.rEnd > r)) {
-
                             return e.destiny;
                         }
                     }
                     return data.dividingList[data.dividingList.length - 1].destiny;
-                }
+                };
                 scope.initializeCropData();
             }
         }
@@ -225,22 +224,57 @@ angular.module('wise.home', ['d3'])
 
                 },
                 link: function (scope, element, attrs) {
+
+                    scope.calculateProductivity = function () {
+                        // TODO - make productiviti rectangle as list of the points
+                        // TODO - in rectange - function  - when in rectangle - add to sum when plan productiviti calculated
+                        // TODO - several rectangles for every cropType
+
+
+                    };
+
                     scope.sow = function (d3) {
                         var circles = [];
                         var cropData = scope.cropData;
+                        var n = 0;
+                        var m = 0;
+
                         switch (cropData.cropType) {
                             case "rows":
-                                var y = 0.5 * cropData.rowSpace * cropData.smToMM; // отступ от краев
-                                while (y < cropData.mmFieldHeight) {
-                                    var x = 0.5 * cropData.columnSpace + cropData.smToMM;
-                                    while (x < cropData.mmFieldWidth) {
-                                        circles.push({x: x, y: y})
-                                        x += cropData.columnSpace * cropData.smToMM;
+                                var startY = cropData.mmRadius;
+                                var startX = cropData.mmRadius;
+                                var dy = cropData.rowSpace * cropData.smToMM;
+                                var dx = cropData.columnSpace * cropData.smToMM;
+
+                                var y = startY;
+                                //+ * cropData.rowSpace * cropData.smToMM; // отступ от краев
+                                //var n = (cropData.mmFieldHeight - 4 * cropData.mmRadius) / dy;
+                                //var m = (cropData.mmFieldWidth - 4 * cropData.mmRadius) / dx;
+                                while (y < cropData.mmFieldHeight - 2 * cropData.mmRadius) {
+
+                                    var x = startX;
+                                    //0.5 *cropData.columnSpace + cropData.smToMM;
+                                    while (x < cropData.mmFieldWidth - 2 * cropData.mmRadius) {
+                                        circles.push({x: x, y: y});
+                                        x += dx;
+                                        m++;
                                     }
-                                    y += cropData.rowSpace * cropData.smToMM;
+                                    y += dy;
+                                    n++;
                                 }
+                                m = Math.round(m/n)-2;
+                                var x1 = startX + 0.5 * dx;
+                                var y1 = startY + 0.5 * dy;
+                                var x2 = x1 + m * dx;
+                                var y2 = y1 + (n-2) * dy;
+                                scope.productivityRectangle = [
+                                    {x: x1, y: y1},
+                                    {x: x1, y: y2},
+                                    {x: x2, y: y2},
+                                    {x: x2, y: y1}];
                                 break;
                             case "square":
+
                                 break;
                             case "hexagon":
                                 break;
@@ -257,52 +291,66 @@ angular.module('wise.home', ['d3'])
                         return circles;
                     };
 
-                    scope.updatePlantsCrop = function (circles, poligons) {
+                    scope.needRecalc = function (plant) {
+                        var x = scope.oldXY.x;
+                        var y = scope.oldXY.y;
+                        var r1 = Math.sqrt(Math.pow(x - plant.x, 2) + Math.pow(y - plant.y, 2));
+
+                        var x = scope.newXY.x;
+                        var y = scope.newXY.y;
+                        var r2 = Math.sqrt(Math.pow(x - plant.x, 2) + Math.pow(y - plant.y, 2));
+                        return (2 * scope.cropData.mmRadius > r1) || (2 * scope.cropData.mmRadius > r2);
+                    };
+
+                    scope.updatePlantsCrop = function (circles, poligons, wihtCheck) {
                         var cropData = scope.cropData;
                         for (var k = 0; k < circles.length; k++) {
+
                             var plant = circles[k];
-                            var poligon = poligons[k];
-                            var step = 1;
+                            if (!wihtCheck || (scope.needRecalc(plant))) {
+                                var poligon = poligons[k];
+                                var step = 0.75;
 
-                            var minX = plant.x - cropData.mmRadius;
-                            var maxX = plant.x + cropData.mmRadius;
-                            var ugnetenie = 0;
-                            var x = minX;
+                                var minX = plant.x - cropData.mmRadius;
+                                var maxX = plant.x + cropData.mmRadius;
+                                var ugnetenie = 0;
+                                var x = minX;
 
-                            while (x <= maxX) {
-                                var dY = Math.sqrt(cropData.mmRadius * cropData.mmRadius - Math.pow((plant.x - x), 2));
-                                var minY = plant.y - dY;
-                                var maxY = plant.y + dY;
-                                var y = minY;
-                                while (y <= maxY) {
-                                    // that is inCircle points(x,y coordinates) for integral
-                                    var vs = poligon;
-                                    var inside = false;
-                                    for (var i = 0, j = vs.length - 1; i < vs.length; j = i++) {
-                                        xi = vs[i][0],
-                                            yi = vs[i][1],
-                                            xj = vs[j][0],
-                                            yj = vs[j][1],
-                                            intersect = ((yi > y) != (yj > y))
-                                                && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
-                                        if (intersect) inside = !inside;
+                                while (x <= maxX) {
+                                    var dY = Math.sqrt(cropData.mmRadius * cropData.mmRadius - Math.pow((plant.x - x), 2));
+                                    var minY = plant.y - dY;
+                                    var maxY = plant.y + dY;
+                                    var y = minY;
+                                    while (y <= maxY) {
+                                        // that is inCircle points(x,y coordinates) for integral
+                                        var vs = poligon;
+                                        var inside = false;
+                                        for (var i = 0, j = vs.length - 1; i < vs.length; j = i++) {
+                                            xi = vs[i][0],
+                                                yi = vs[i][1],
+                                                xj = vs[j][0],
+                                                yj = vs[j][1],
+                                                intersect = ((yi > y) != (yj > y))
+                                                    && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+                                            if (intersect) inside = !inside;
+                                        }
+                                        if (!inside) {
+                                            var r = Math.sqrt(Math.pow(x - plant.x, 2) + Math.pow(y - plant.y, 2));
+                                            var ro = cropData.plantData.k / ((r / cropData.smToMM) * 2 * Math.PI);
+                                            ugnetenie += step * step * ro / (cropData.smToMM * cropData.smToMM);
+                                        }
+                                        y += step;
                                     }
-                                    if (!inside) {
-                                        var r = Math.sqrt(Math.pow(x - plant.x, 2) + Math.pow(y - plant.y, 2));
-                                        var ro = cropData.plantData.k / ((r / cropData.smToMM) * 2 * Math.PI);
-                                        ugnetenie += step * step * ro / (cropData.smToMM * cropData.smToMM);
-                                    }
-                                    y += step;
+                                    x += step;
                                 }
-                                x += step;
+                                plant.ugnetenie = ugnetenie;
+                                plant.urogainost = cropData.plantData.plantCrop - plant.ugnetenie;
                             }
-                            plant.ugnetenie = ugnetenie;
-                            plant.urogainost = cropData.plantData.plantCrop - plant.ugnetenie;
                         }
                     };
 
 
-                    scope.getSvg = function() {
+                    scope.getSvg = function () {
                         if (scope.svg) {
                             return scope.svg;
                         } else {
@@ -318,6 +366,7 @@ angular.module('wise.home', ['d3'])
 
                         var svg = scope.getSvg();
 
+
                         var color = d3.scaleOrdinal()
                             .range(d3.schemeCategory20);
 
@@ -325,16 +374,31 @@ angular.module('wise.home', ['d3'])
                             .data(circles)
                             .enter().append("g")
                             .call(d3.drag()
-                                .on("start", dragstarted)
+                                .on("start", scope.dragstarted)
                                 .on("drag", scope.dragged)
-                                .on("end", dragended));
+                                .on("end", scope.dragended));
+
+                        var rectW = scope.productivityRectangle[2].x - scope.productivityRectangle[0].x
+                        var rectH = scope.productivityRectangle[2].y - scope.productivityRectangle[0].y
+
+                        var rectangle = circle.append("rect")
+                            .attr("x", scope.productivityRectangle[0].x)
+                            .attr("y", scope.productivityRectangle[0].y)
+                            .attr("width", rectW)
+                            .attr("height", rectH)
+                            .attr("fill", "transparent")
+                            .attr("stroke", "black")
+                            .attr("stroke-width", "3");
+
 
                         var cell = scope.cell = circle.append("path")
                             .data(polygons)
                             .attr("d", renderCell)
                             .attr("id", function (d, i) {
                                 return "cell-" + i;
-                            });
+                            })
+                            //.attr("stroke","black")
+                            .attr("stroke-width", "3");
 
                         circle.append("clipPath")
                             .attr("id", function (d, i) {
@@ -386,6 +450,8 @@ angular.module('wise.home', ['d3'])
                                 return Math.round(d.urogainost * 100) / 100;
                             });
 
+
+
                         circle.on("click", function (d) {
                             testClick(d);
                         });
@@ -409,7 +475,7 @@ angular.module('wise.home', ['d3'])
 
                         var polygons = scope.voronoi.polygons(circles);
 
-                        scope.updatePlantsCrop(circles, polygons);
+                        scope.updatePlantsCrop(circles, polygons, false);
 
                         scope.fullRefresh(d3, circles, polygons);
 
@@ -419,11 +485,12 @@ angular.module('wise.home', ['d3'])
                         console.log("testClick");
                     }
 
-                    function dragstarted(d) {
+                    scope.dragstarted = function (d) {
                         d3.select(this).raise().classed("active", true);
-                    }
+                        scope.oldXY = {x: d.x, y: d.y}
+                    };
 
-                    scope.dragged = function(d) {
+                    scope.dragged = function (d) {
                         d3 = scope.d3;
                         var c = d3.select(this);
 
@@ -442,10 +509,12 @@ angular.module('wise.home', ['d3'])
                             .attr("d", renderCell);
                     };
 
-                    function dragended(d, i) {
+                    scope.dragended = function (d, i) {
                         // TODO - recalculation only some polygons
-                        scope.updatePlantsCrop(scope.circles, scope.polygons);
-                        //scope.fullRefresh(d3, scope.circles, scope.polygons);
+                        scope.oldXY;
+                        scope.newXY = {x: d.x, y: d.y};
+
+                        scope.updatePlantsCrop(scope.circles, scope.polygons, true);
 
                         scope.circle.select("text")
                             .data(scope.circles)
@@ -460,14 +529,17 @@ angular.module('wise.home', ['d3'])
                                 return Math.round(d.urogainost * 100) / 100;
                             });
 
-
                         d3.select(this).classed("active", false);
+                    };
+
+
+                    function renderCell1(d) {
+                        return d == null ? null : "M" + d.join("L") + "Z";
                     }
 
                     function renderCell(d) {
                         return d == null ? null : "M" + d.join("L") + "Z";
                     }
-
                 }
             }
         }]
