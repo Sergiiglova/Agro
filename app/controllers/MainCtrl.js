@@ -1,4 +1,4 @@
-app.controller('mainCtrl', ['$scope', '$timeout', '$mdSidenav', '$mdDialog', '$location',
+app.controller('MainCtrl', ['$scope', '$timeout', '$mdSidenav', '$mdDialog', '$location',
     function ($scope, $timeout, $mdSidenav, $mdDialog, $location) {
 
         $scope.pages = {experimentModel: true, plantModel: true, cropModel: true};
