@@ -83,10 +83,10 @@
                 </md-input-container>
                 <md-input-container>
                     <label>Норма висіву</label>
-                    <input ng-model="cropData.seedingRate" type="number" min="1" max="1000">
+                    <input ng-model="cropData.plantCount" type="number" min="1" max="1000">
                 </md-input-container>
                 <md-input-container>
-                    <label>Площа см.</label>
+                    <label>Площа м.</label>
                     <input readonly="true" ng-model="cropData.productivitySquare" type="number" min="1" max="1000">
                 </md-input-container>
                 <md-input-container>
@@ -94,7 +94,7 @@
                     <input readonly="true" ng-model="cropData.productivity" type="number" min="1" max="1000">
                 </md-input-container>
                 <md-input-container>
-                    <label>Урожай, цга.</label>
+                    <label>Урожай, ц/га.</label>
                     <input readonly="true" ng-model="cropData.totalProductivity" type="number" min="1" max="1000">
                 </md-input-container>
             </div>

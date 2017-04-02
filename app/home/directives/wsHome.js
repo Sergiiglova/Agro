@@ -14,8 +14,8 @@ angular.module('wise.home', ['d3'])
             link: function (scope) {
                 scope.sow = function () {
                     // TODO - new
-                    console.log("sow");
-
+                    console.log("reSsow");
+                    scope.cropData.resow = !scope.cropData.resow;
                 };
 
                 scope.test = function () {
@@ -98,8 +98,8 @@ angular.module('wise.home', ['d3'])
 
                     cropData.smToMM = 10;
                     cropData.mmRadius = cropData.plantData.plantRadius * cropData.smToMM;
-                    cropData.width = 2 * cropData.mmRadius * 5;
-                    cropData.height = 2 * cropData.mmRadius * 8;
+                    cropData.width = 2 * cropData.mmRadius * 4;
+                    cropData.height = 2 * cropData.mmRadius * 4;
 
                     cropData.mmInPixel = 1;
                     cropData.mmFieldWidth = cropData.width * cropData.mmInPixel;
@@ -233,10 +233,6 @@ angular.module('wise.home', ['d3'])
                 link: function (scope, element, attrs) {
 
                     scope.calculateProductivity = function () {
-                        // TODO - make productiviti rectangle as list of the points
-                        // TODO - in rectange - function  - when in rectangle - add to sum when plan productiviti calculated
-                        // TODO - several rectangles for every cropType
-
 
                     };
 
@@ -319,7 +315,8 @@ angular.module('wise.home', ['d3'])
 
                     scope.updatePlantsCrop = function (circles, poligons, wihtCheck) {
                         var cropData = scope.cropData;
-
+                        var plantCount = 0;
+                        cropData.productivity = 0;
                         for (var k = 0; k < circles.length; k++) {
 
                             var plant = circles[k];
@@ -353,6 +350,9 @@ angular.module('wise.home', ['d3'])
                                 plant.urogainost = cropData.plantData.plantCrop - plant.ugnetenie;
                                 if (scope.inPolygon(plant.x, plant.y, scope.productivityRectangle1)) {
                                     cropData.productivity += plant.urogainost;
+                                    cropData.totalProductivity = cropData.productivity / cropData.productivitySquare / 10;
+                                    plantCount++;
+                                    cropData.plantCount = plantCount / cropData.productivitySquare;
                                 }
                             }
                         }
@@ -374,6 +374,7 @@ angular.module('wise.home', ['d3'])
 
                     scope.getSvg = function () {
                         if (scope.svg) {
+                            d3.selectAll("svg > *").remove();
                             return scope.svg;
                         } else {
                             return scope.svg = d3.select("#chart")
@@ -383,6 +384,7 @@ angular.module('wise.home', ['d3'])
                                 .style('width', '100%');
                         }
                     };
+
                     scope.fullRefresh = function (d3, circles, polygons) {
                         var cropData = scope.cropData;
 
@@ -403,14 +405,14 @@ angular.module('wise.home', ['d3'])
                         var rectW = scope.productivityRectangle[2].x - scope.productivityRectangle[0].x
                         var rectH = scope.productivityRectangle[2].y - scope.productivityRectangle[0].y
 
-                        //var rectangle = circle.append("rect")
-                        //    .attr("x", scope.productivityRectangle[0].x)
-                        //    .attr("y", scope.productivityRectangle[0].y)
-                        //    .attr("width", rectW)
-                        //    .attr("height", rectH)
-                        //    .attr("fill", "transparent")
-                        //    .attr("stroke", "black")
-                        //    .attr("stroke-width", "3");
+                        var rectangle = circle.append("rect")
+                            .attr("x", scope.productivityRectangle[0].x)
+                            .attr("y", scope.productivityRectangle[0].y)
+                            .attr("width", rectW)
+                            .attr("height", rectH)
+                            .attr("fill", "transparent")
+                            .attr("stroke", "black")
+                            .attr("stroke-width", "3");
 
 
                         var cell = scope.cell = circle.append("path")
@@ -480,26 +482,37 @@ angular.module('wise.home', ['d3'])
 
                     d3Service.d3().then(function (d3) {
                         scope.d3 = d3;
-                        var cropData = scope.cropData;
 
-                        var circles = scope.circles = scope.sow(d3);
-
-                        scope.voronoi = d3.voronoi()
-                            .x(function (d) {
-                                return d.x;
-                            })
-                            .y(function (d) {
-                                return d.y;
-                            })
-                            .extent([[-1, -1], [cropData.width + 1, cropData.height + 1]]);
-
-                        var polygons = scope.voronoi.polygons(circles);
-
-                        scope.updatePlantsCrop(circles, polygons, false);
-
-                        scope.fullRefresh(d3, circles, polygons);
-
+                        scope.refresh();
                     });
+                    scope.refresh = function () {
+                        var d3 = scope.d3;
+                        if (d3) {
+
+                            var cropData = scope.cropData;
+
+
+                            // todo  - clear all
+                            var circles = scope.circles = scope.sow(d3);
+
+                            scope.voronoi = d3.voronoi()
+                                .x(function (d) {
+                                    return d.x;
+                                })
+                                .y(function (d) {
+                                    return d.y;
+                                })
+                                .extent([[-1, -1], [cropData.width + 1, cropData.height + 1]]);
+
+                            var polygons = scope.voronoi.polygons(circles);
+
+                            scope.updatePlantsCrop(circles, polygons, false);
+
+                            scope.fullRefresh(d3, circles, polygons);
+                        }
+                    };
+
+                    scope.$watch('cropData.resow', scope.refresh);
 
                     function testClick(d) {
                         console.log("testClick");
