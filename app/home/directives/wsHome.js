@@ -350,12 +350,15 @@ angular.module('wise.home', ['d3'])
                                 plant.urogainost = cropData.plantData.plantCrop - plant.ugnetenie;
                                 if (scope.inPolygon(plant.x, plant.y, scope.productivityRectangle1)) {
                                     cropData.productivity += plant.urogainost;
-                                    cropData.totalProductivity = cropData.productivity / cropData.productivitySquare / 10;
                                     plantCount++;
-                                    cropData.plantCount = plantCount / cropData.productivitySquare;
                                 }
                             }
+
                         }
+                        cropData.productivity = Math.round(cropData.productivity*100)/100;
+                        cropData.totalProductivity = Math.round(cropData.productivity / cropData.productivitySquare / 10 *1000)/1000;
+                        cropData.plantCount = Math.round(plantCount / cropData.productivitySquare*1000)/1000;
+
                     };
 
                     scope.inPolygon = function (x, y, vs) {
@@ -390,6 +393,40 @@ angular.module('wise.home', ['d3'])
 
                         var svg = scope.getSvg();
 
+                        // define the y scale  (vertical)
+                        //var yScale = d3.scaleLinear()
+                        //    .domain([0,  scope.cropData.height])    // values between 0 and 100
+                        //    .range([0,  scope.cropData.height ]);
+                        //
+                        //
+                        //
+                        //var xScale = d3
+                        //    .scaleLinear()
+                        //    .domain([0,  scope.cropData.width])    // values between for month of january
+                        //    .range([0,  scope.cropData.width]);   // map these the the chart width = total width minus padding at both sides
+                        //
+                        //
+                        ////// define the y axis
+                        //var yAxis = d3.axisLeft(yAxis);
+                        //
+                        ////svg.append("g")
+                        ////    //.attr("transform", "translate(0," + 1000 + ")")
+                        ////    .call(d3.axisBottom(xScale));
+                        ////
+                        //svg.selectAll("g")
+                        //    .call(yAxis);
+
+                        var rectW = scope.productivityRectangle[2].x - scope.productivityRectangle[0].x;
+                        var rectH = scope.productivityRectangle[2].y - scope.productivityRectangle[0].y;
+
+                        var rectangle = svg.append("rect")
+                            .attr("x", scope.productivityRectangle[0].x)
+                            .attr("y", scope.productivityRectangle[0].y)
+                            .attr("width", rectW)
+                            .attr("height", rectH)
+                            .attr("fill", "transparent")
+                            .attr("stroke", "black")
+                            .attr("stroke-width", "5");
 
                         var color = d3.scaleOrdinal()
                             .range(d3.schemeCategory20);
@@ -402,27 +439,17 @@ angular.module('wise.home', ['d3'])
                                 .on("drag", scope.dragged)
                                 .on("end", scope.dragended));
 
-                        var rectW = scope.productivityRectangle[2].x - scope.productivityRectangle[0].x
-                        var rectH = scope.productivityRectangle[2].y - scope.productivityRectangle[0].y
-
-                        var rectangle = circle.append("rect")
-                            .attr("x", scope.productivityRectangle[0].x)
-                            .attr("y", scope.productivityRectangle[0].y)
-                            .attr("width", rectW)
-                            .attr("height", rectH)
-                            .attr("fill", "transparent")
-                            .attr("stroke", "black")
-                            .attr("stroke-width", "3");
-
 
                         var cell = scope.cell = circle.append("path")
                             .data(polygons)
                             .attr("d", renderCell)
+                            .style("stroke", "red")
+                            .style("stroke-width", 2)
+                            .attr("fill", "none")
                             .attr("id", function (d, i) {
                                 return "cell-" + i;
-                            })
-                            //.attr("stroke","black")
-                            .attr("stroke-width", "3");
+                            });
+
 
                         circle.append("clipPath")
                             .attr("id", function (d, i) {
@@ -444,9 +471,13 @@ angular.module('wise.home', ['d3'])
                                 return d.y;
                             })
                             .attr("r", cropData.mmRadius)
-                            .style("fill", function (d, i) {
-                                return color(i);
-                            });
+                            .style("fill",
+                                "green"
+
+                                //    function (d, i) {
+                                //    return color(i);
+                                //}
+                            );
 
                         circle.append("circle")
                             .data(circles)

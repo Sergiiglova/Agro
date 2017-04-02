@@ -1,7 +1,7 @@
 app.controller('mainCtrl', ['$scope', '$timeout', '$mdSidenav', '$mdDialog', '$location',
     function ($scope, $timeout, $mdSidenav, $mdDialog, $location) {
 
-        $scope.pages = {experimentModel: true, plantModel: true, cropModel: true};
+        $scope.pages = {experimentModel: false, plantModel: false, cropModel: true};
         $scope.goto = function (divName) {
             $scope.pages.experimentModel = false;
             $scope.pages.plantModel = false;
